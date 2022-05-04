@@ -5,6 +5,8 @@ import (
 	"bytes"
 	"log"
 	"net"
+
+	pkg2 "github.com/dollarkillerx/remote_networking/pkg"
 )
 
 func (g *Gateway) internalServer() {
@@ -25,9 +27,9 @@ func (g *Gateway) internalServerCore(conn net.Conn) {
 	reader := bufio.NewReader(conn)
 
 	scanner := bufio.NewScanner(reader)
-	scanner.Split(PackageScannerSplit)
+	scanner.Split(pkg2.PackageScannerSplit)
 
-	pkg := new(Package)
+	pkg := new(pkg2.Package)
 	if scanner.Scan() {
 		err := pkg.Unpack(bytes.NewReader(scanner.Bytes()))
 		if err != nil {
@@ -36,7 +38,7 @@ func (g *Gateway) internalServerCore(conn net.Conn) {
 		}
 
 		switch pkg.Version[1] {
-		case byte(PHeartbeat):
+		case byte(pkg2.PHeartbeat):
 			ov := make(chan struct{})
 			defer func() {
 				close(ov)
@@ -50,7 +52,7 @@ func (g *Gateway) internalServerCore(conn net.Conn) {
 						break loop
 					case data := <-g.mainChannel: // 下发新链接命令
 						if data == "new" {
-							pg := NewPackage(PNewConn, []byte(""))
+							pg := pkg2.NewPackage(pkg2.PNewConn, []byte(""))
 							err := pg.Pack(conn)
 							if err != nil {
 								log.Println(err)
@@ -61,13 +63,13 @@ func (g *Gateway) internalServerCore(conn net.Conn) {
 				}
 			}()
 			for scanner.Scan() { // 心跳保活
-				scannedPack := new(Package)
+				scannedPack := new(pkg2.Package)
 				err := scannedPack.Unpack(bytes.NewReader(scanner.Bytes()))
 				if err != nil {
 					log.Println(err)
 					continue
 				}
-				if pkg.Version[1] == byte(PHeartbeat) {
+				if pkg.Version[1] == byte(pkg2.PHeartbeat) {
 					continue
 				}
 				if err := scanner.Err(); err != nil {
@@ -79,7 +81,7 @@ func (g *Gateway) internalServerCore(conn net.Conn) {
 			if err := scanner.Err(); err != nil {
 				return
 			}
-		case byte(PNewConn): // 新连接放入池中
+		case byte(pkg2.PNewConn): // 新连接放入池中
 			g.agentConn <- conn
 		}
 	}
