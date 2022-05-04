@@ -13,8 +13,21 @@ type Package struct {
 	Data    []byte  // 数据
 }
 
-func NewPackage() *Package {
+type PackageType byte
 
+const (
+	PData      PackageType = '0'
+	PHeartbeat PackageType = '1'
+	PNewConn   PackageType = '2'
+)
+
+func NewPackage(packageType PackageType, data []byte) *Package {
+	pk := &Package{
+		Version: [2]byte{'V', byte(packageType)},
+		Data:    data,
+	}
+	pk.Length = int16(len(data))
+	return pk
 }
 
 func (p *Package) Pack(write io.Writer) error {
