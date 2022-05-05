@@ -2,6 +2,7 @@ package tj
 
 import (
 	"bufio"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -36,6 +37,59 @@ func TestHttp(t *testing.T) {
 
 	fmt.Println(string(body))
 	ioutil.WriteFile("aaa.body", body, 00666)
+}
+
+func TestHttpTLSServer(t *testing.T) {
+	// openssl genrsa -out server.key 2048
+	// openssl ecparam -genkey -name secp384r1 -out server.key
+	// openssl req -new -x509 -sha256 -key server.key -out server.crt -days 3650
+
+	log.SetFlags(log.Llongfile)
+
+	cer, err := tls.LoadX509KeyPair("server.crt", "server.key")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	config := &tls.Config{Certificates: []tls.Certificate{cer}}
+
+	conn, err := tls.Listen("tcp", "0.0.0.0:8175", config)
+	if err != nil {
+		panic(err)
+	}
+
+	// https://0.0.0.0:8175/
+
+	for {
+		conn, _ := conn.Accept()
+		go func() {
+			defer conn.Close()
+			reader := bufio.NewReader(conn)
+
+			var header string
+			for {
+				readByte, err := reader.ReadBytes('\n')
+				if err != nil {
+					log.Println(err)
+					break
+				}
+				if strings.TrimSpace(string(readByte)) == "" {
+					break
+				}
+				header += string(readByte)
+			}
+			fmt.Println(header)
+
+			file, err := ioutil.ReadFile("aaa.body")
+			if err != nil {
+				panic(err)
+			}
+
+			conn.Write(file)
+		}()
+	}
+
 }
 
 func TestHttpServer(t *testing.T) {
