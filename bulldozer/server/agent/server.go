@@ -41,15 +41,6 @@ func (c *Client) Run() {
 		return
 	}
 
-	// select method
-	//methods, err := ReadMethods(c.conn)
-	//if err != nil {
-	//	log.Printf(`[socks5] read methods failed: %s`, err)
-	//	return
-	//}
-	//
-	//fmt.Println("vvv")
-
 	method := c.chooseMethod()
 	if err := WriteMethod(method, c.conn); err != nil || method == MethodNoAcceptable {
 		if err != nil {
