@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
 	"io"
 	"log"
 	"net"
@@ -15,7 +13,7 @@ var internalGatewayAddr *net.TCPAddr
 
 func main() {
 	// 1. 一个主链接控制 负责子链接的控制
-	addr, err := net.ResolveTCPAddr("tcp4", "127.0.0.1:8082")
+	addr, err := net.ResolveTCPAddr("tcp4", "127.0.0.1:8182")
 	if err != nil {
 		panic(err)
 	}
@@ -54,22 +52,24 @@ func mainCore() error {
 		}
 	}()
 
-	scanner := bufio.NewScanner(tcpConn)
-	scanner.Split(pkg.PackageScannerSplit)
-	for scanner.Scan() {
+	log.Println("init agent success")
+
+	for {
 		scannedPack := new(pkg.Package)
-		err := scannedPack.Unpack(bytes.NewReader(scanner.Bytes()))
+		err := scannedPack.Unpack(tcpConn)
 		if err != nil {
 			log.Println(err)
-			break
+			return err
 		}
 
-		if scannedPack.Version[1] == byte(pkg.PNewConn) {
+		switch scannedPack.Version[1] {
+		case byte(pkg.PHeartbeat):
+		case byte(pkg.PNewConn):
 			go newConn()
 		}
 	}
 
-	return scanner.Err()
+	return nil
 }
 
 func newConn() {
@@ -85,8 +85,17 @@ func newConn() {
 		return
 	}
 
-	go ioCopy(local, remove)
-	ioCopy(remove, local)
+	pkg := pkg.NewPackage(pkg.PNewConn, []byte(""))
+	err = pkg.Pack(remove)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	log.Println("new conn")
+
+	go ioCopy(remove, local)
+	ioCopy(local, remove)
 }
 
 func ioCopy(server io.Writer, client io.Reader) {

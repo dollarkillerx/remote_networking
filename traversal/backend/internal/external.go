@@ -13,16 +13,19 @@ func (g *Gateway) externalServer() error {
 			log.Println(err)
 			continue
 		}
-
 		// 下发新链接指令
 		g.mainChannel <- "new"
 		select {
-		case <-time.After(time.Second): // 超时控制
+		case <-time.After(time.Second * 3): // 超时控制
+			log.Println("conn timeout")
 			accept.Close()
 			break
 		case conn := <-g.agentConn:
-			go ioCopy(accept, conn)
-			ioCopy(conn, accept)
+			go func() {
+				log.Println("conn tran")
+				go ioCopy(accept, conn)
+				ioCopy(conn, accept)
+			}()
 		}
 	}
 }

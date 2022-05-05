@@ -7,7 +7,7 @@ func main() {
 	// 1.1 服务网关 (外部服务调用访问我们内网服务的网关)
 	// 1.2 内部服务入口 (内网服务器与网关通信的入口)
 
-	gateway, err := internal.NewGateway("0.0.0.0:8081", "0.0.0.0:8082")
+	gateway, err := internal.NewGateway("0.0.0.0:8181", "0.0.0.0:8182")
 	if err != nil {
 		panic(err)
 	}

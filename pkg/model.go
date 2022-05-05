@@ -3,6 +3,7 @@ package pkg
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 )
@@ -36,6 +37,7 @@ func (p *Package) Pack(write io.Writer) error {
 	if err != nil {
 		return err
 	}
+
 	err = binary.Write(write, binary.BigEndian, &p.Length)
 	if err != nil {
 		return err
@@ -49,6 +51,10 @@ func (p *Package) Unpack(reader io.Reader) error {
 	err = binary.Read(reader, binary.BigEndian, &p.Version)
 	if err != nil {
 		return err
+	}
+
+	if p.Version[0] != 'V' {
+		return errors.New("not data")
 	}
 
 	err = binary.Read(reader, binary.BigEndian, &p.Length)
