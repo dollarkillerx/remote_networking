@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net"
 	"strings"
@@ -82,7 +81,6 @@ func tcpDivert(conn net.Conn, reader *bufio.Reader) {
 	case pkg.ConnUndefined:
 		return
 	case pkg.TcpType:
-		fmt.Println("tcp: ", bull.Addr)
 		nextHop, err = net.Dial("tcp", bull.Addr)
 		if err != nil {
 			return

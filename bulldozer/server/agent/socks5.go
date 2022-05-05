@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/dollarkillerx/remote_networking/bulldozer/utils"
 	"io"
+	"log"
 	"net"
 	"strconv"
 )
@@ -67,11 +68,14 @@ func ReadMethods(r io.Reader) ([]uint8, error) {
 	b := utils.SPool.Get().([]byte)
 	defer utils.SPool.Put(b)
 
+	log.Println("a1")
+
 	n, err := io.ReadAtLeast(r, b, 2)
 	if err != nil {
 		return nil, err
 	}
 
+	log.Println("a2")
 	if b[0] != Version {
 		return nil, ErrBadVersion
 	}
@@ -86,9 +90,11 @@ func ReadMethods(r io.Reader) ([]uint8, error) {
 			return nil, err
 		}
 	}
+	log.Println("a3")
 
 	methods := make([]byte, int(b[1]))
 	copy(methods, b[2:length])
+	log.Println("a4")
 
 	return methods, nil
 }

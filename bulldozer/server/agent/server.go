@@ -17,13 +17,7 @@ type Config struct {
 	Addr     string
 	Username string
 	Password string
-
-	Verify func(string, string) bool
-
-	ServerProtocol string
-	ServerAddr     string
-	HTTPPath       string
-	WSPath         string
+	Verify   func(string, string) bool
 }
 
 func NewClient(conn net.Conn) *Client {
@@ -48,13 +42,15 @@ func (c *Client) Run() {
 	}
 
 	// select method
-	methods, err := ReadMethods(c.conn)
-	if err != nil {
-		log.Printf(`[socks5] read methods failed: %s`, err)
-		return
-	}
+	//methods, err := ReadMethods(c.conn)
+	//if err != nil {
+	//	log.Printf(`[socks5] read methods failed: %s`, err)
+	//	return
+	//}
+	//
+	//fmt.Println("vvv")
 
-	method := c.chooseMethod(methods)
+	method := c.chooseMethod()
 	if err := WriteMethod(method, c.conn); err != nil || method == MethodNoAcceptable {
 		if err != nil {
 			log.Printf(`[socks5] write method failed: %s`, err)
@@ -86,25 +82,14 @@ func (c *Client) Run() {
 	}
 }
 
-func (c *Client) chooseMethod(methods []uint8) uint8 {
-	supportNoAuth := false
-	supportUserPass := false
-
-	for _, m := range methods {
-		switch m {
-		case MethodNoAuth:
-			supportNoAuth = c.Config.Verify == nil
-		case MethodUserPass:
-			supportUserPass = c.Config.Verify != nil
-		}
-	}
-
-	if supportUserPass {
-		return MethodUserPass
-	} else if supportNoAuth {
-		return MethodNoAuth
-	}
-	return MethodNoAcceptable
+func (c *Client) chooseMethod() uint8 {
+	return MethodNoAuth
+	//if supportUserPass {
+	//	return MethodUserPass
+	//} else if supportNoAuth {
+	//	return MethodNoAuth
+	//}
+	//return MethodNoAcceptable
 }
 
 var method2Handler = map[uint8]func(*Client, net.Conn) error{

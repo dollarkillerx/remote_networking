@@ -6,3 +6,6 @@
 > https://luyuhuang.tech/2020/08/27/rfc1928.html
 > https://github.com/luyuhuang/subsocks
 
+Test:
+
+`curl -x socks5h://127.0.0.1:8174 http://www.baidu.com/`

@@ -14,6 +14,8 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	log.SetFlags(log.Llongfile)
+
 	// 本地建立socks5
 	listener, err := net.Listen("tcp", conf.AgentConfig.LocalAddr)
 	if err != nil {

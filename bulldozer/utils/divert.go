@@ -2,7 +2,6 @@ package utils
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"sync"
 	"time"
@@ -58,7 +57,7 @@ func NewDivert(key string) Divert {
 }
 
 func (d Divert) NewKey() string {
-	d.Timeout = time.Now().Add(time.Hour * 5).Unix()
+	d.Timeout = time.Now().Add(time.Second * 5).Unix()
 	marshal, err := json.Marshal(d)
 	if err != nil {
 		panic(err)
@@ -88,7 +87,6 @@ func (d Divert) Check(key string) bool {
 		return false
 	}
 
-	fmt.Println(d.Timeout)
 	if d.Timeout < time.Now().Unix() {
 		return false
 	}

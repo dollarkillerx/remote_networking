@@ -2,7 +2,6 @@ package agent
 
 import (
 	"crypto/tls"
-	"fmt"
 	"log"
 	"net"
 	"strings"
@@ -55,12 +54,10 @@ func (c *Client) dialServer(addr string) (net.Conn, error) {
 	if err != nil {
 		log.Fatalln("远程服务器链接失败: ", err)
 	}
-	defer dial.Close()
 
 	divert := utils.NewDivert(conf.AgentConfig.Token)
 	key := divert.NewKey()
 
-	fmt.Println(key)
 	header := strings.ReplaceAll(rb, "TMG", key)
 
 	dial.Write([]byte(header))
