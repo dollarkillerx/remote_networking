@@ -2,12 +2,16 @@ package backend
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"github.com/dollarkillerx/remote_networking/bulldozer/conf"
-	"github.com/dollarkillerx/remote_networking/bulldozer/utils"
 	"log"
 	"net"
 	"strings"
+
+	"github.com/dollarkillerx/remote_networking/bulldozer/conf"
+	"github.com/dollarkillerx/remote_networking/bulldozer/pkg"
+	"github.com/dollarkillerx/remote_networking/bulldozer/utils"
 )
 
 func Server(conn net.Conn) {
@@ -45,7 +49,7 @@ func Server(conn net.Conn) {
 		divert := utils.NewDivert(conf.BackendConfig.Token)
 		check := divert.Check(token)
 		if check {
-			fmt.Println("TCP divert................")
+			tcpDivert(conn, reader)
 		}
 	}
 
@@ -56,4 +60,38 @@ func Server(conn net.Conn) {
 	}
 
 	conn.Write(html)
+}
+
+func tcpDivert(conn net.Conn, reader *bufio.Reader) {
+	bt, err := reader.ReadBytes('\n')
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	var bull pkg.Bulldozer
+	err = json.Unmarshal(bytes.TrimSpace(bt), &bull)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	var nextHop net.Conn
+
+	switch bull.ConnType {
+	case pkg.ConnUndefined:
+		return
+	case pkg.TcpType:
+		fmt.Println("tcp: ", bull.Addr)
+		nextHop, err = net.Dial("tcp", bull.Addr)
+		if err != nil {
+			return
+		}
+
+		defer nextHop.Close()
+	}
+
+	if err := utils.Transport(conn, nextHop); err != nil {
+		log.Println(err)
+	}
 }

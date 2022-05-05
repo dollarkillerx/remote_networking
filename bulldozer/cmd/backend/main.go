@@ -2,9 +2,10 @@ package main
 
 import (
 	"crypto/tls"
+	"log"
+
 	"github.com/dollarkillerx/remote_networking/bulldozer/conf"
 	"github.com/dollarkillerx/remote_networking/bulldozer/server/backend"
-	"log"
 )
 
 func main() {
