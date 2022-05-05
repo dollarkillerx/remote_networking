@@ -1,0 +1,6 @@
+{
+  "listen_addr": "0.0.0.0:8457",
+  "token": "378def8265924fbb80d9b5f79a912e2d",
+  "cert_file": "server.crt",
+  "key_file": "server.key"
+}

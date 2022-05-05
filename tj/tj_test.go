@@ -5,13 +5,14 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/dollarkillerx/remote_networking/utils"
 	"io/ioutil"
 	"log"
 	"net"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/dollarkillerx/remote_networking/utils"
 )
 
 func TestHttp(t *testing.T) {
