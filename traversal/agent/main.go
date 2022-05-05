@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"io"
 	"log"
 	"net"
 	"time"
@@ -20,7 +21,15 @@ func main() {
 	}
 	internalGatewayAddr = addr
 
-	mainCore()
+	// 断线重连
+	for {
+		err := mainCore()
+		if err != nil {
+			log.Println(err)
+		}
+
+		time.Sleep(time.Second)
+	}
 
 }
 
@@ -32,6 +41,7 @@ func mainCore() error {
 		return err
 	}
 
+	// 主链接心跳保活
 	go func() {
 		for {
 			time.Sleep(time.Second)
@@ -55,9 +65,45 @@ func mainCore() error {
 		}
 
 		if scannedPack.Version[1] == byte(pkg.PNewConn) {
-
+			go newConn()
 		}
 	}
 
 	return scanner.Err()
+}
+
+func newConn() {
+	local, err := net.Dial("tcp", "127.0.0.1:5432")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	remove, err := net.DialTCP("tcp", nil, internalGatewayAddr)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	go ioCopy(local, remove)
+	ioCopy(remove, local)
+}
+
+func ioCopy(server io.Writer, client io.Reader) {
+	for {
+		var b [1024]byte
+		read, err := client.Read(b[:])
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			log.Println(err)
+			break
+		}
+
+		if _, err := server.Write(b[:read]); err != nil {
+			log.Println(err)
+			break
+		}
+	}
 }

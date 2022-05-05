@@ -35,10 +35,14 @@ func ioCopy(server io.Writer, client io.Reader) {
 			if err == io.EOF {
 				break
 			}
+			log.Println(err)
 			break
 		}
 
 		if _, err := server.Write(b[:read]); err != nil {
+			if err == io.EOF {
+				break
+			}
 			log.Println(err)
 			break
 		}
