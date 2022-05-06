@@ -1,5 +1,6 @@
 {
   "local_addr": "0.0.0.0:8174",
   "token": "378def8265924fbb80d9b5f79a912e2d",
-  "backend_addr": "cds.powduck.com:8457"
+  "backend_addr": "cds.powduck.com:8383",
+  "pac": false
 }
