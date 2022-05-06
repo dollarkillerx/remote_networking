@@ -19,3 +19,6 @@ bulldozer/bulldozer_agent
 bulldozer/bulldozer_backend
 traversal/traversal_agent
 traversal/traversal_backend
+ip2region.db
+
+/bulldozer/ip2region.db

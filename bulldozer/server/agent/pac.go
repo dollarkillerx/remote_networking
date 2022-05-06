@@ -1,6 +1,13 @@
 package agent
 
-import "strings"
+import (
+	"github.com/dollarkillerx/remote_networking/bulldozer/conf"
+	"github.com/dollarkillerx/remote_networking/bulldozer/utils"
+	"github.com/dollarkillerx/remote_networking/bulldozer/utils/ip2region"
+	"log"
+	"net"
+	"strings"
+)
 
 var defaultPacDomain = []string{
 	"google.com",
@@ -2192,11 +2199,78 @@ var defaultPacDomain = []string{
 	"zuola.com",
 }
 
+var pacListGN = []string{
+	"baidu.com",
+	"bdstatic.com",
+	"bilibili.com",
+	"bilivideo.com",
+	"qq.com",
+	"bootcdn.net",
+	"baidustatic.com",
+}
+
+var ip2Region *ip2region.Ip2Region
+
+func init() {
+	ip2, err := ip2region.New("ip2region.db")
+	if err != nil {
+		log.Println("ip2region not fund")
+		return
+	}
+
+	ip2Region = ip2
+}
+
 func IsPac(domain string) bool {
 	for _, v := range defaultPacDomain {
 		if strings.Contains(domain, v) {
 			return true
 		}
+	}
+
+	for _, v := range pacListGN {
+		if strings.Contains(domain, v) {
+			return false
+		}
+	}
+
+	for _, v := range conf.AgentConfig.ProxyList {
+		if strings.Contains(domain, v) {
+			return true
+		}
+	}
+
+	for _, v := range conf.AgentConfig.NoProxyList {
+		if strings.Contains(domain, v) {
+			return false
+		}
+	}
+
+	if ip2Region == nil {
+		return false
+	}
+
+	dns, err := utils.SearchDns(domain, conf.AgentConfig.GetDNS())
+	if err != nil {
+		host, err := net.LookupHost(domain)
+		if err != nil {
+			log.Println(err)
+		}
+		if len(host) != 0 {
+			dns = append(dns, host...)
+		}
+	}
+
+	if len(dns) == 0 {
+		return true
+	}
+
+	search, err := ip2Region.BinarySearch(dns[0])
+	if err != nil {
+		return false
+	}
+	if (search.Country == "中国" && search.Province != "台湾" && search.Province != "香港" && search.Province != " 澳门") || (search.Country == "0" && search.City == "内网IP") {
+		return false
 	}
 
 	return false
