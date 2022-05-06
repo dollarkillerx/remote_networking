@@ -57,7 +57,7 @@ func NewDivert(key string) Divert {
 }
 
 func (d Divert) NewKey() string {
-	d.Timeout = time.Now().Add(time.Second * 15).Unix()
+	d.Timeout = time.Now().Add(time.Second * 10).Unix()
 	marshal, err := json.Marshal(d)
 	if err != nil {
 		panic(err)
