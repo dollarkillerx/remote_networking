@@ -58,7 +58,10 @@ func (c *Client) handleConnect(conn net.Conn, req *Request) {
 	}
 
 	if err := utils.Transport(conn, nextHop); err != nil {
-		log.Printf(`[socks5] "connect" transport failed: %s`, err)
+		if err == io.EOF || strings.Contains(err.Error(), "connection reset by peer") {
+		} else {
+			log.Printf(`[socks5] "connect" transport failed: %s`, err)
+		}
 	}
 }
 
