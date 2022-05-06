@@ -9,6 +9,7 @@ type agentConfig struct {
 	LocalAddr   string `json:"local_addr"`
 	Token       string `json:"token"`
 	BackendAddr string `json:"backend_addr"`
+	Pac         bool   `json:"pac"`
 }
 
 type backendConfig struct {

@@ -1,6 +1,6 @@
 {
-  "token": "token...",
+  "token": "n7TM7NK3hPU",
   "agent_proxy_addr": "127.0.0.1:5432",
-  "external_gateway": "0.0.0.0:8181",
-  "internal_gateway": "0.0.0.0:8182"
+  "external_gateway": "0.0.0.0:8381",
+  "internal_gateway": "43.135.75.195:8382"
 }

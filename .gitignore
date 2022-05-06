@@ -15,7 +15,7 @@
 # vendor/
 .idea
 
-bulldozer_agent
-bulldozer_backend
-traversal_agent
-traversal_backend
+bulldozer/bulldozer_agent
+bulldozer/bulldozer_backend
+traversal/traversal_agent
+traversal/traversal_backend

@@ -16,10 +16,8 @@ import (
 func (c *Client) handleConnect(conn net.Conn, req *Request) {
 	var nextHop net.Conn
 	var err error
-	var isProxy bool // pac 更具DNS or 域名匹配选择是否代理
-	isProxy = true
 
-	if isProxy {
+	if !conf.AgentConfig.Pac {
 		nextHop, err = c.dialServer(req.Addr.String())
 		if err != nil {
 			log.Printf(`[socks5] "connect" dial server failed: %s`, err)
@@ -30,14 +28,27 @@ func (c *Client) handleConnect(conn net.Conn, req *Request) {
 		}
 		defer nextHop.Close()
 	} else {
-		nextHop, err = net.Dial("tcp", req.Addr.String())
-		if err != nil {
-			if err = NewReply(HostUnreachable, nil).Write(conn); err != nil {
-				log.Printf(`[socks5] "connect" write reply failed: %s`, err)
+		pac := IsPac(req.Addr.Host)
+		if pac {
+			nextHop, err = c.dialServer(req.Addr.String())
+			if err != nil {
+				log.Printf(`[socks5] "connect" dial server failed: %s`, err)
+				if err = NewReply(HostUnreachable, nil).Write(conn); err != nil {
+					log.Printf(`[socks5] "connect" write reply failed: %s`, err)
+				}
+				return
 			}
-			return
+			defer nextHop.Close()
+		} else {
+			nextHop, err = net.Dial("tcp", req.Addr.String())
+			if err != nil {
+				if err = NewReply(HostUnreachable, nil).Write(conn); err != nil {
+					log.Printf(`[socks5] "connect" write reply failed: %s`, err)
+				}
+				return
+			}
+			defer nextHop.Close()
 		}
-		defer nextHop.Close()
 	}
 
 	// 确认代理成功
