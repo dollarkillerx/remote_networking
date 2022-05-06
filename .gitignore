@@ -14,3 +14,8 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 .idea
+
+bulldozer_agent
+bulldozer_backend
+traversal_agent
+traversal_backend
