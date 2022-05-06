@@ -2,7 +2,7 @@ package internal
 
 import (
 	"bufio"
-	"fmt"
+	"github.com/dollarkillerx/remote_networking/traversal/conf"
 	"log"
 	"net"
 
@@ -32,7 +32,10 @@ func (g *Gateway) internalServerCore(conn net.Conn) {
 		return
 	}
 
-	fmt.Println("init success: ", pkg)
+	if string(pkg.Data) != conf.Conf.Token {
+		conn.Close()
+		return
+	}
 
 	switch pkg.Version[1] {
 	case byte(pkg2.PHeartbeat):
@@ -42,7 +45,7 @@ func (g *Gateway) internalServerCore(conn net.Conn) {
 		}()
 
 		go func() {
-			fmt.Println("new conn")
+			//fmt.Println("new conn")
 		loop:
 			for {
 				select {
@@ -56,7 +59,7 @@ func (g *Gateway) internalServerCore(conn net.Conn) {
 							log.Println(err)
 							continue
 						}
-						fmt.Println("send new conn")
+						//fmt.Println("send new conn")
 					}
 				}
 			}

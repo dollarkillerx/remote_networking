@@ -1,0 +1,6 @@
+{
+  "token": "token...",
+  "agent_proxy_addr": "127.0.0.1:5432",
+  "external_gateway": "0.0.0.0:8181",
+  "internal_gateway": "0.0.0.0:8182"
+}

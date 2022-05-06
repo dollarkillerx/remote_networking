@@ -1,24 +1,28 @@
 package main
 
 import (
-	"io"
 	"log"
 	"net"
 	"time"
 
 	"github.com/dollarkillerx/remote_networking/pkg"
+	"github.com/dollarkillerx/remote_networking/traversal/conf"
 )
 
 var internalGatewayAddr *net.TCPAddr
 
 func main() {
 	// 1. 一个主链接控制 负责子链接的控制
-	addr, err := net.ResolveTCPAddr("tcp4", "127.0.0.1:8182")
+
+	conf.InitConf()
+
+	addr, err := net.ResolveTCPAddr("tcp4", conf.Conf.InternalGateway)
 	if err != nil {
 		panic(err)
 	}
 	internalGatewayAddr = addr
 
+	log.Printf("Agent InternalGateway: %s LocalProxy: %s \n", conf.Conf.InternalGateway, conf.Conf.AgentProxyAddr)
 	// 断线重连
 	for {
 		err := mainCore()
@@ -43,7 +47,7 @@ func mainCore() error {
 	go func() {
 		for {
 			time.Sleep(time.Second)
-			pg := pkg.NewPackage(pkg.PHeartbeat, []byte(""))
+			pg := pkg.NewPackage(pkg.PHeartbeat, []byte(conf.Conf.Token))
 			err := pg.Pack(tcpConn)
 			if err != nil {
 				log.Println(err)
@@ -73,7 +77,7 @@ func mainCore() error {
 }
 
 func newConn() {
-	local, err := net.Dial("tcp", "127.0.0.1:5432")
+	local, err := net.Dial("tcp", conf.Conf.AgentProxyAddr)
 	if err != nil {
 		log.Println(err)
 		return
@@ -85,34 +89,14 @@ func newConn() {
 		return
 	}
 
-	pkg := pkg.NewPackage(pkg.PNewConn, []byte(""))
-	err = pkg.Pack(remove)
+	pk := pkg.NewPackage(pkg.PNewConn, []byte(conf.Conf.Token))
+	err = pk.Pack(remove)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	log.Println("new conn")
+	//log.Println("new conn")
 
-	go ioCopy(remove, local)
-	ioCopy(local, remove)
-}
-
-func ioCopy(server io.Writer, client io.Reader) {
-	for {
-		var b [1024]byte
-		read, err := client.Read(b[:])
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			log.Println(err)
-			break
-		}
-
-		if _, err := server.Write(b[:read]); err != nil {
-			log.Println(err)
-			break
-		}
-	}
+	pkg.Transport(remove, local)
 }
