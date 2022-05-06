@@ -10,6 +10,7 @@ import (
 )
 
 var defaultPacDomain = []string{
+	"cloudfront.net",
 	"google.com",
 	"google.cn",
 	"google.co.jp",
