@@ -1,11 +1,13 @@
 package agent
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"fmt"
 	"github.com/dollarkillerx/remote_networking/bulldozer/utils"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 	"strconv"
@@ -546,4 +548,143 @@ func (r *Reply) String() string {
 	}
 	return fmt.Sprintf("5 %d 0 %d %s",
 		r.Rep, addr.Type, addr.String())
+}
+
+/*
+UDPHeader is the header of an UDP request
+ +----+------+------+----------+----------+----------+
+ |RSV | FRAG | ATYP | DST.ADDR | DST.PORT |   DATA   |
+ +----+------+------+----------+----------+----------+
+ | 2  |  1   |  1   | Variable |    2     | Variable |
+ +----+------+------+----------+----------+----------+
+*/
+type UDPHeader struct {
+	Rsv  uint16
+	Frag uint8
+	Addr *Addr
+}
+
+// NewUDPHeader creates an UDPHeader
+func NewUDPHeader(rsv uint16, frag uint8, addr *Addr) *UDPHeader {
+	return &UDPHeader{
+		Rsv:  rsv,
+		Frag: frag,
+		Addr: addr,
+	}
+}
+
+func (h *UDPHeader) Write(w io.Writer) error {
+	b := utils.SPool.Get().([]byte)
+	defer utils.SPool.Put(b)
+
+	binary.BigEndian.PutUint16(b[:2], h.Rsv)
+	b[2] = h.Frag
+
+	addr := h.Addr
+	if addr == nil {
+		addr = &Addr{}
+	}
+	length, _ := addr.Encode(b[3:])
+
+	_, err := w.Write(b[:3+length])
+	return err
+}
+
+func (h *UDPHeader) String() string {
+	return fmt.Sprintf("%d %d %d %s",
+		h.Rsv, h.Frag, h.Addr.Type, h.Addr.String())
+}
+
+// UDPDatagram represent an UDP request
+type UDPDatagram struct {
+	Header *UDPHeader
+	Data   []byte
+}
+
+// NewUDPDatagram creates an UDPDatagram
+func NewUDPDatagram(header *UDPHeader, data []byte) *UDPDatagram {
+	return &UDPDatagram{
+		Header: header,
+		Data:   data,
+	}
+}
+
+// ReadUDPDatagram reads an UDPDatagram from the stream
+func ReadUDPDatagram(r io.Reader) (*UDPDatagram, error) {
+	b := utils.LPool.Get().([]byte)
+	defer utils.LPool.Put(b)
+
+	// when r is a streaming (such as TCP connection), we may read more than the required data,
+	// but we don't know how to handle it. So we use io.ReadFull to instead of io.ReadAtLeast
+	// to make sure that no redundant data will be discarded.
+	n, err := io.ReadFull(r, b[:5])
+	if err != nil {
+		return nil, err
+	}
+
+	header := &UDPHeader{
+		Rsv:  binary.BigEndian.Uint16(b[:2]),
+		Frag: b[2],
+	}
+
+	atype := b[3]
+	hlen := 0
+	switch atype {
+	case AddrIPv4:
+		hlen = 10
+	case AddrIPv6:
+		hlen = 22
+	case AddrDomain:
+		hlen = 7 + int(b[4])
+	default:
+		return nil, ErrBadAddrType
+	}
+
+	dlen := int(header.Rsv)
+	if dlen == 0 { // standard SOCKS5 UDP datagram
+		extra, err := ioutil.ReadAll(r) // we assume no redundant data
+		if err != nil {
+			return nil, err
+		}
+		copy(b[n:], extra)
+		n += len(extra) // total length
+		dlen = n - hlen // data length
+	} else { // extended feature, for UDP over TCP, using reserved field as data length
+		if _, err := io.ReadFull(r, b[n:hlen+dlen]); err != nil {
+			return nil, err
+		}
+		n = hlen + dlen
+	}
+
+	header.Addr = new(Addr)
+	if err := header.Addr.Decode(b[3:hlen]); err != nil {
+		return nil, err
+	}
+
+	data := make([]byte, dlen)
+	copy(data, b[hlen:n])
+
+	d := &UDPDatagram{
+		Header: header,
+		Data:   data,
+	}
+
+	return d, nil
+}
+
+func (d *UDPDatagram) Write(w io.Writer) error {
+	h := d.Header
+	if h == nil {
+		h = &UDPHeader{}
+	}
+	buf := bytes.Buffer{}
+	if err := h.Write(&buf); err != nil {
+		return err
+	}
+	if _, err := buf.Write(d.Data); err != nil {
+		return err
+	}
+
+	_, err := buf.WriteTo(w)
+	return err
 }

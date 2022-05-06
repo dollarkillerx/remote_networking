@@ -66,10 +66,10 @@ func (c *Client) Run() {
 	switch request.Cmd {
 	case CmdConnect:
 		c.handleConnect(c.conn, request)
-		//case CmdBind:
-		//	c.handleBind(c.conn, request)
-		//case CmdUDP:
-		//	c.handleUDP(c.conn, request)
+	case CmdBind:
+		c.handleBind(c.conn, request)
+	case CmdUDP:
+		c.handleUDP(c.conn, request)
 	}
 }
 
