@@ -4,6 +4,7 @@ import (
 	"github.com/dollarkillerx/remote_networking/bulldozer/conf"
 	"github.com/dollarkillerx/remote_networking/bulldozer/utils"
 	"github.com/dollarkillerx/remote_networking/bulldozer/utils/ip2region"
+
 	"log"
 	"net"
 	"strings"
@@ -2259,6 +2260,10 @@ func IsPac(domain string) bool {
 		}
 		if len(host) != 0 {
 			dns = append(dns, host...)
+		}
+	} else {
+		if len(dns) == 0 {
+			dns = append(dns, domain)
 		}
 	}
 
