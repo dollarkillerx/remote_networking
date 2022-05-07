@@ -2223,7 +2223,7 @@ func init() {
 	ip2Region = ip2
 }
 
-func IsPac(domain string) bool {
+func IsPac(domain string) (ok bool) {
 	for _, v := range defaultPacDomain {
 		if strings.Contains(domain, v) {
 			return true
@@ -2275,9 +2275,10 @@ func IsPac(domain string) bool {
 	if err != nil {
 		return false
 	}
+
 	if (search.Country == "中国" && search.Province != "台湾" && search.Province != "香港" && search.Province != " 澳门") || (search.Country == "0" && search.City == "内网IP") {
 		return false
 	}
 
-	return false
+	return true
 }
