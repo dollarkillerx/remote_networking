@@ -4,7 +4,6 @@ import (
 	"github.com/dollarkillerx/remote_networking/bulldozer/conf"
 	"github.com/dollarkillerx/remote_networking/bulldozer/utils"
 	"github.com/dollarkillerx/remote_networking/bulldozer/utils/ip2region"
-
 	"log"
 	"net"
 	"strings"
@@ -1037,7 +1036,6 @@ var defaultPacDomain = []string{
 	"movabletype.com",
 	"moviefap.com",
 	"moztw.org",
-	"mp",
 	"mp3ye.eu",
 	"mpettis.com",
 	"mpfinance.com",
@@ -2200,6 +2198,7 @@ var defaultPacDomain = []string{
 	"zuo.la",
 	"zuola.com",
 	"hmoegirl.com",
+	"followme.com",
 }
 
 var pacListGN = []string{
@@ -2225,18 +2224,6 @@ func init() {
 }
 
 func IsPac(domain string) (ok bool) {
-	for _, v := range defaultPacDomain {
-		if strings.Contains(domain, v) {
-			return true
-		}
-	}
-
-	for _, v := range pacListGN {
-		if strings.Contains(domain, v) {
-			return false
-		}
-	}
-
 	for _, v := range conf.AgentConfig.ProxyList {
 		if strings.Contains(domain, v) {
 			return true
@@ -2246,6 +2233,18 @@ func IsPac(domain string) (ok bool) {
 	for _, v := range conf.AgentConfig.NoProxyList {
 		if strings.Contains(domain, v) {
 			return false
+		}
+	}
+
+	for _, v := range pacListGN {
+		if strings.Contains(domain, v) {
+			return false
+		}
+	}
+
+	for _, v := range defaultPacDomain {
+		if strings.Contains(domain, v) {
+			return true
 		}
 	}
 

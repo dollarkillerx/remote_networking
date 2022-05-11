@@ -1,2 +1,4 @@
 github.com/dollarkillerx/easy_dns v0.0.2 h1:Xp3xluRMaSEsZSNa4jZWgCrMgYcqZUjMnoWxSr41iXc=
 github.com/dollarkillerx/easy_dns v0.0.2/go.mod h1:2AEPU35Ha8Hi1lYPQp1F+GQTir+lzAd1U3jNGUnXCBw=
+github.com/patrickmn/go-cache v2.1.0+incompatible h1:HRMgzkcYKYpi3C8ajMPV8OFXaaRUnok+kx1WdO15EQc=
+github.com/patrickmn/go-cache v2.1.0+incompatible/go.mod h1:3Qf8kWWT7OJRJbdiICTKqZju1ZixQ/KpMGzzAfe6+WQ=

@@ -28,7 +28,8 @@ func (c *Client) handleConnect(conn net.Conn, req *Request) {
 		}
 		defer nextHop.Close()
 	} else {
-		pac := IsPac(req.Addr.Host)
+		pac := IsPac(strings.TrimSpace(req.Addr.Host))
+		//log.Println(conn.RemoteAddr(), "   ", req.Addr.Host, "  ", pac)
 		if pac {
 			nextHop, err = c.dialServer(req.Addr.String())
 			if err != nil {

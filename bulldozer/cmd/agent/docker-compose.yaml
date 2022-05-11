@@ -5,4 +5,5 @@ services:
     restart: always
     volumes:
       - ./agent.json:/app/agent.json
+      - ./ip2region.db:/app/ip2region.db
     network_mode: host
