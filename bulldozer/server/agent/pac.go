@@ -2199,6 +2199,7 @@ var defaultPacDomain = []string{
 	"zsrhao.com",
 	"zuo.la",
 	"zuola.com",
+	"hmoegirl.com",
 }
 
 var pacListGN = []string{

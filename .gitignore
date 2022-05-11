@@ -22,3 +22,5 @@ traversal/traversal_backend
 ip2region.db
 
 /bulldozer/ip2region.db
+
+.json

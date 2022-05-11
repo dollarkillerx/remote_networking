@@ -1,0 +1,10 @@
+version: "3.3"
+services:
+  bulldozer_backend:
+    image: bulldozer_backend:0.0.1
+    restart: always
+    volumes:
+      - ./backend.json:/app/backend.json
+      - ./server.crt:/app/server.crt
+      - ./server.key:/app/server.key
+    network_mode: host
