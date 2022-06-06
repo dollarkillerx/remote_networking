@@ -67,9 +67,9 @@ func (c *Client) Run() {
 	case CmdConnect:
 		c.handleConnect(c.conn, request)
 	case CmdBind:
-		c.handleBind(c.conn, request)
+		//c.handleBind(c.conn, request)
 	case CmdUDP:
-		c.handleUDP(c.conn, request)
+		//c.handleUDP(c.conn, request)
 	}
 }
 

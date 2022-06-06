@@ -8,8 +8,10 @@ build_traversal_upx:
 
 build_bulldozer:
 	CGO_ENABLED=0 GOOS="linux" GOARCH="amd64" go build -ldflags "-s -w" -o bulldozer_agent bulldozer/cmd/agent/main.go
+	CGO_ENABLED=0 GOOS="windows" GOARCH="amd64" go build -ldflags "-s -w" -o bulldozer_agent.exe bulldozer/cmd/agent/main.go
 	CGO_ENABLED=0 GOOS="linux" GOARCH="amd64" go build -ldflags "-s -w" -o bulldozer_backend bulldozer/cmd/backend/main.go
 
 build_bulldozer_upx:
 	upx bulldozer_agent
 	upx bulldozer_backend
+	upx bulldozer_agent.exe

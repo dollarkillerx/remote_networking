@@ -69,7 +69,8 @@ func (c *Client) handleConnect(conn net.Conn, req *Request) {
 func (c *Client) dialServer(addr string) (net.Conn, error) {
 	dial, err := tls.Dial("tcp", conf.AgentConfig.BackendAddr, nil)
 	if err != nil {
-		log.Fatalln("远程服务器链接失败: ", err)
+		log.Println("远程服务器链接失败: ", err)
+		return nil, err
 	}
 
 	divert := utils.NewDivert(conf.AgentConfig.Token)
